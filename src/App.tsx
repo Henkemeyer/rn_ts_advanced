@@ -1,9 +1,11 @@
 import Input from './components/Input'
 import Button from './components/Button'
 import Container from './components/Container'
+import Form, { FormHandle } from './components/Form';
 import { List } from './components/List';
 import { IconButton } from './components/IconButton';
 import { Card } from './components/Card';
+import { useRef } from 'react';
 
 function HeartIcon() {
   return <span>❤️</span>;
@@ -14,6 +16,25 @@ function FrownIcon() {
 }
 
 function App() {
+  const nameInput = useRef<HTMLInputElement>(null)
+  const ageInput = useRef<HTMLInputElement>(null)
+  const userForm = useRef<FormHandle>(null)
+
+  function handleSave(data: unknown) {
+    // const extractedData = data as { name: string; age: string }
+    if (
+      !data ||
+      typeof data !== 'object' ||
+      !('name' in data) ||
+      !('age' in data)
+    ) {
+        return;
+    }
+
+    console.log(data)
+    userForm.current?.clear()
+  }
+
   const users = [
     { id: 'u1', name: 'Max' },
     { id: 'u2', name: 'Manuel' },
@@ -23,9 +44,11 @@ function App() {
 
   return (
     <main>
-      <Input id="name" label="Your Name" type="string"/>
-      <Input id="age" label="Your Age" type="number"/>
-      <Container as={Button}>Click Me</Container>
+      <Form onSave={handleSave}>
+        <Input id="name" label="Your Name" type="string" ref={nameInput}/>
+        <Input id="age" label="Your Age" type="number" ref={ageInput}/>
+        <Container as={Button}>Save</Container>
+      </Form>
       <p>
         <Button href="https://google.com">A Link</Button>
       </p>
