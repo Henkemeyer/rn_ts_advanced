@@ -5,11 +5,14 @@ import Form, { FormHandle } from './components/Form';
 import { List } from './components/List';
 import { IconButton } from './components/IconButton';
 import { Card } from './components/Card';
-import { useRef } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import TimersContextProvider from './store/timers-context';
 import AddTimer from './components/AddTimer.tsx';
 import Header from './components/Header.tsx';
 import Timers from './components/Timers.tsx';
+import { get } from './util/http.ts'
+import BlogPosts, { BlogPost } from './components/BlogPosts.tsx';
+import fetchingImg from './assets/data-fetching.png'
 
 function HeartIcon() {
   return <span>❤️</span>;
@@ -19,10 +22,40 @@ function FrownIcon() {
   return <span>☹️</span>;
 }
 
+type RawBlogPostData = {
+  id: number
+  userId: number
+  title: string
+  body: string
+}
+
 function App() {
   const nameInput = useRef<HTMLInputElement>(null)
   const ageInput = useRef<HTMLInputElement>(null)
   const userForm = useRef<FormHandle>(null)
+  const [fetchedPosts, setFetchedPosts] = useState<BlogPost[]>()
+
+  useEffect(() => {
+    async function fetchPosts() {
+      const data = await get('https://jsonplaceholder.typicode.com/posts') as RawBlogPostData[]
+
+      const blogPosts: BlogPost[] = data.map(rawPost => {
+        return {
+          id: rawPost.id,
+          title: rawPost.title,
+          text: rawPost.body
+        }
+      })
+      setFetchedPosts(blogPosts)
+    }
+    fetchPosts()
+  }, [])
+
+  let content: ReactNode
+
+  if (fetchedPosts) {
+    content = <BlogPosts posts={fetchedPosts} />
+  }
 
   function handleSave(data: unknown) {
     // const extractedData = data as { name: string; age: string }
@@ -99,6 +132,10 @@ function App() {
         <AddTimer />
         <Timers />
       </p>
+    </main>
+    <main>
+      <img src={fetchingImg} alt="An Abstract image depicting data fetching"/>
+      {content}
     </main>
     </TimersContextProvider>
   )
